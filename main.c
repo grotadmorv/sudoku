@@ -11,6 +11,14 @@
 #define box_width 3
 
 
+// des couleurs pour que ça soit joli
+#define MAGENTA   "\x1B[35m"
+#define YELLOW   "\x1B[33m"
+#define RESET "\x1B[0m"
+#define CYAN   "\x1B[36m"
+
+
+
 //grille
 int grid[rows][cols];
 
@@ -148,15 +156,36 @@ int main (int argc, const char * argv[]) {
 		return EXIT_FAILURE;
 	}else{
 		// on commence à résoudre à partir de 0 
+		// printf("%sgrdsqfsdqfeen\n", KGRN);
+		// printf(KGRN "green\n" RESET);
 		if(solve(0,0)){
+			int ctn_pipe = 1;
+			int ctn_bar = 1;
+
+
 			// on parcours tout
+			printf(YELLOW "*" RESET);
+			printf(MAGENTA "-----------------------" RESET);
+			printf(YELLOW "*\n" RESET);
 			for (int row = 0; row < rows; row++) {
+				printf(MAGENTA "| " RESET);
 				for (int col = 0; col < cols; col++) {
 					// on print la grille
-					printf("%d ", grid[row][col]);
+					printf(CYAN);
+					printf("%d ",grid[row][col]);
+					printf(RESET);
+					if(ctn_pipe % 3 == 0){
+						printf(MAGENTA "| " RESET);
+					}
+					ctn_pipe++;
 				}
-				
+				if(ctn_bar % 3 == 0){
+					printf(YELLOW "\n*" RESET);
+					printf(MAGENTA "-----------------------" RESET);
+					printf(YELLOW "*" RESET);
+				}
 				printf("\n");
+				ctn_bar++;
 			}
 			// si aucun solution trouvée
 		}else{
@@ -167,7 +196,7 @@ int main (int argc, const char * argv[]) {
     t2 = clock();
 	// calcul du temps avec clock de time.h
     temps = (float)(t2-t1)/CLOCKS_PER_SEC;
-	
+
 	printf("time = %f\n", temps);
 	
 	return EXIT_SUCCESS;
