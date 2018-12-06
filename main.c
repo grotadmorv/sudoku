@@ -168,6 +168,7 @@ int main (int argc, const char * argv[]) {
 		}else{
 			// on commence à résoudre à partir de 0 
 			if(solve(0,0)){
+				printf("Solution : \n");
 				int ctn_pipe = 1;
 				int ctn_bar = 1;
 				// on parcours tout
