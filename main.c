@@ -2,13 +2,17 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <time.h>
+#include <string.h>
+#include <time.h>
+#include <math.h>
+#include "random_puzzle.h"
 
 
 // constante ligne colonne, valeur et taille du carré sudoku
-#define rows 9
-#define cols 9
-#define values 9
-#define box_width 3
+#define ROWS 9
+#define COLS 9
+#define VALUES 9
+#define BOX_WIDTH 3
 
 
 // des couleurs pour que ça soit joli
@@ -20,7 +24,7 @@
 
 
 //grille
-int grid[rows][cols];
+int grid[ROWS][COLS];
 
 
 //chargement du fichier et du contenu
@@ -32,8 +36,8 @@ int sudokuFile (const char *path) {
 	}
 
 	// push du tableau sudoku dans le grid
-	for (int row = 0; row < rows; row++) {
-		for (int col = 0; col < cols; col++) {
+	for (int row = 0; row < ROWS; row++) {
+		for (int col = 0; col < COLS; col++) {
 			fscanf(file, "%d", &grid[row][col]);
 		}
 	}
@@ -48,7 +52,7 @@ int sudokuFile (const char *path) {
 int valid (int row, int col, int val) {
 
 	// parcours des lignes
-	for (int n = 0; n < rows; n++) {
+	for (int n = 0; n < ROWS; n++) {
 		// si ça n ligne de la colonne ou n colonne de la ligne est egal à la valeur d'entrée, on renvoit faux 
 		// --> solve passera à la suite
 		if (grid[n][col] == val || grid[row][n] == val){
@@ -58,13 +62,13 @@ int valid (int row, int col, int val) {
 
 	// modulo(reste) des lignes et colonnes
 
-	int tmp_row = (row / box_width) * box_width;
-	int tmp_col = (col / box_width) * box_width;
+	int tmp_row = (row / BOX_WIDTH) * BOX_WIDTH;
+	int tmp_col = (col / BOX_WIDTH) * BOX_WIDTH;
 	
 
 	// on parcours tout
-	for (int r = tmp_row; r < tmp_row + box_width; r++) {
-		for (int c = tmp_col; c < tmp_col + box_width; c++) {
+	for (int r = tmp_row; r < tmp_row + BOX_WIDTH; r++) {
+		for (int c = tmp_col; c < tmp_col + BOX_WIDTH; c++) {
 			// si la case est egale à la valeur, on renvoit faux, ça passera à la suivante
 			if (grid[r][c] == val){
                 return false;
@@ -80,7 +84,7 @@ int valid (int row, int col, int val) {
 
 int solve (int row, int col) {
 	//test de fin de la grille
-	if (row == rows){
+	if (row == ROWS){
 		return true;
 	}
 	//test si la case est =/= de 0
@@ -95,7 +99,7 @@ int solve (int row, int col) {
 	}
 
 	//remplir les valeurs
-	for (int val = 1; val <= values; val++) {
+	for (int val = 1; val <= VALUES; val++) {
 		// test avec la fonction valide
 		if (valid(row, col, val)) {
 			grid[row][col] = val;
@@ -133,65 +137,69 @@ int main (int argc, const char * argv[]) {
 
 	// si il n'y a pas de fichier d'entrée
 	if (argc != 2) {
-		printf("Usage: sudoku /path/to/sudoku.txt\n");
+		printf("Usage: '--random'or '/path/to/sudoku_{level}.txt'\n");
 		
 		return EXIT_SUCCESS;
-	}
-	
-	char realPath[PATH_MAX + 1];
-	char *res = realpath(argv[1], realPath);
-	
-	// si le lien n'est pas valide
-	if (!res) {
-		printf("Invalid sudoku path!\n");
-		
-		return EXIT_FAILURE;
-	}
-	
-
-	// si le chargement du fichier n'est pas valide ou son contenu
-	if (!sudokuFile(realPath)) {
-		printf("Couldn't load the sudoku!\n");
-		
-		return EXIT_FAILURE;
 	}else{
-		// on commence à résoudre à partir de 0 
-		// printf("%sgrdsqfsdqfeen\n", KGRN);
-		// printf(KGRN "green\n" RESET);
-		if(solve(0,0)){
-			int ctn_pipe = 1;
-			int ctn_bar = 1;
+		char realPath[PATH_MAX + 1];
+		char *tmp = realpath(argv[1], realPath);
 
+		char *res = (char*)malloc(100);
+		res = tmp;
 
-			// on parcours tout
-			printf(YELLOW "*" RESET);
-			printf(MAGENTA "-----------------------" RESET);
-			printf(YELLOW "*\n" RESET);
-			for (int row = 0; row < rows; row++) {
-				printf(MAGENTA "| " RESET);
-				for (int col = 0; col < cols; col++) {
-					// on print la grille
-					printf(CYAN);
-					printf("%d ",grid[row][col]);
-					printf(RESET);
-					if(ctn_pipe % 3 == 0){
-						printf(MAGENTA "| " RESET);
-					}
-					ctn_pipe++;
-				}
-				if(ctn_bar % 3 == 0){
-					printf(YELLOW "\n*" RESET);
-					printf(MAGENTA "-----------------------" RESET);
-					printf(YELLOW "*" RESET);
-				}
-				printf("\n");
-				ctn_bar++;
-			}
-			// si aucun solution trouvée
-		}else{
-			printf("I have no solution !");
+		if(strcmp(argv[1] ,"--random" ) == 0){
+			free(res);
+			startGenerate();
+			res = realpath("sudoku_grid/random.txt", realPath);
 		}
-    }
+		
+		// si le lien n'est pas valide
+		if (!res) {
+			printf("%s%s","Invalid sudoku path!, it was : ", argv[1]);
+			return EXIT_FAILURE;
+		}
+
+		// si le chargement du fichier n'est pas valide ou son contenu
+		if (!sudokuFile(realPath)) {
+			printf("Couldn't load the sudoku!\n");
+			
+			return EXIT_FAILURE;
+		}else{
+			// on commence à résoudre à partir de 0 
+			if(solve(0,0)){
+				int ctn_pipe = 1;
+				int ctn_bar = 1;
+				// on parcours tout
+				printf(YELLOW "*" RESET);
+				printf(MAGENTA "-----------------------" RESET);
+				printf(YELLOW "*\n" RESET);
+				for (int row = 0; row < ROWS; row++) {
+					printf(MAGENTA "| " RESET);
+					for (int col = 0; col < COLS; col++) {
+						// on print la grille
+						printf(CYAN);
+						printf("%d ",grid[row][col]);
+						printf(RESET);
+						if(ctn_pipe % 3 == 0){
+							printf(MAGENTA "| " RESET);
+						}
+						ctn_pipe++;
+					}
+					if(ctn_bar % 3 == 0){
+						printf(YELLOW "\n*" RESET);
+						printf(MAGENTA "-----------------------" RESET);
+						printf(YELLOW "*" RESET);
+					}
+					printf("\n");
+					ctn_bar++;
+				}
+				// si aucun solution trouvée
+			}else{
+				printf("I have no solution !");
+			}
+		}
+
+	}
 
     t2 = clock();
 	// calcul du temps avec clock de time.h
