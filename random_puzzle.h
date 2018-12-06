@@ -5,6 +5,15 @@
 #define SRN 3 // square and row
 #define K 20  //missing digits
 
+
+
+// color terminal
+#define MAGENTA   "\x1B[35m"
+#define YELLOW   "\x1B[33m"
+#define RESET "\x1B[0m"
+#define CYAN   "\x1B[36m"
+#define RED  "\x1B[31m"
+
 int mat[N][N];
 
 // retourne faux si 3x3 block contient un nombre
@@ -156,7 +165,41 @@ void fillValues()
   removeKDigits();
 }
 
-void printSudoku()
+void printSudokuInConsole()
+{
+  int ctn_pipe_random = 1;
+  int ctn_bar_random = 1;
+  printf(YELLOW "*" RESET);
+  printf(MAGENTA "-----------------------" RESET);
+  printf(YELLOW "*\n" RESET);
+
+  for(int i = 0; i < N ; i++)
+  {
+    printf(MAGENTA "| " RESET);
+    for(int j = 0; j < N; j++)
+    {
+      if(mat[i][j]== 0){
+        printf("%s%d%s ",RED,mat[i][j],RESET);
+      }else{
+        printf("%s%d%s ",CYAN,mat[i][j],RESET);
+      }
+      if(ctn_pipe_random % 3 == 0){
+        printf(MAGENTA "| " RESET);
+      }
+      ctn_pipe_random++;
+    }
+    if(ctn_bar_random % 3 == 0){
+      printf(YELLOW "\n*" RESET);
+      printf(MAGENTA "-----------------------" RESET);
+      printf(YELLOW "*" RESET);
+    }
+    printf("\n");
+    ctn_bar_random++;
+  }
+  printf("\n");
+}
+
+void printSudokuInFile()
 {
   FILE *f = fopen("sudoku_grid/random.txt", "w");
   if (f == NULL)
@@ -175,13 +218,14 @@ void printSudoku()
   }
   fprintf(f, "\n");
   printf("Puzzle successfully writed in random.txt !\n");
+  printSudokuInConsole();
 }
 
 int startGenerate()
 {
   srand(time(NULL));
   fillValues();
-  printSudoku();
+  printSudokuInFile();
 }
 
 #endif
