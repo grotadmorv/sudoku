@@ -5,6 +5,8 @@
 #include <string.h>
 #include <time.h>
 #include <math.h>
+#include <pthread.h>
+#include <unistd.h>
 #include "random_puzzle.h"
 
 
@@ -26,6 +28,9 @@
 
 //grille
 int grid[ROWS][COLS];
+
+//thread
+pthread_t tid[2];
 
 
 //chargement du fichier et du contenu
@@ -127,8 +132,23 @@ int solve (int row, int col) {
 }
 
 
+// thread pour le solve
+void* solveThread(void *arg){
+    
+    pthread_t id = pthread_self();
+
+    if(pthread_equal(id,tid[0])){
+		solve(0, 0);
+    }
+
+    return NULL;
+}
+
 // main function
 int main (int argc, const char * argv[]) {
+	// thread
+    int i = 0;
+    int err;
 
 	// on initialise le temps pour l'execution
     float temps;
@@ -150,8 +170,9 @@ int main (int argc, const char * argv[]) {
 
 		if(strcmp(argv[1] ,"--random" ) == 0){
 			free(res);
-			startGenerate();
-			res = realpath("sudoku_grid/random.txt", realPath);
+			if(startGenerate()){
+				res = realpath("sudoku_grid/random.txt", realPath);
+			}
 		}
 		
 		// si le lien n'est pas valide
@@ -166,8 +187,10 @@ int main (int argc, const char * argv[]) {
 			
 			return EXIT_FAILURE;
 		}else{
+        	err = pthread_create(&(tid[i]), NULL, &solveThread, NULL);
 			// on commence à résoudre à partir de 0 
-			if(solve(0,0)){
+			if(err == 0){
+				pthread_join(tid[i], NULL);
 				printf("Solution : \n");
 				int ctn_pipe = 1;
 				int ctn_bar = 1;
